@@ -4,6 +4,7 @@ inherited InicioDB: TInicioDB
   Caption = 'InicioDB'
   ClientHeight = 280
   ClientWidth = 491
+  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   object Panel1: TPanel[0]

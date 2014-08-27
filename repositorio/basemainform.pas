@@ -13,6 +13,7 @@
   - implementa propriedade LastActiveControl
   - implementa formkeydown - uso da tecla ESC para sair / fechar formulário
   - padroniza o formato para datas
+  - implementa restrições minimizar, maximizar, botão fechar e bordas
   ==================================
   Adriano Alexandre Adami - 2014
   http://contribuicoes.wordpress.com
@@ -58,13 +59,42 @@ type
     function GetEventObject(cmp: tcomponent): onEventObject;
     procedure DefaultOnEnter(sender: tObject);
     procedure DefineEnterExit(wCntrl: tWinControl);
+    function getmaxHeight: integer;
+    function getmaxwidth: integer;
+    function getminHeight: integer;
+    function getminwidth: integer;
     procedure InicializaComponentes;
     procedure OnEventListDestroy;
+    procedure setmaxHeight(AValue: integer);
+    procedure setmaxwidth(AValue: integer);
+    procedure setminHeight(AValue: integer);
+    procedure setminwidth(AValue: integer);
   public
     procedure GeraException(msg: string);
+    procedure NaoMaximizar;
+    procedure NaoMinimizar;
+    procedure DefinirBordasMaximas;
+    procedure DefinirBordasMinimas;
+    procedure DefinirBordas;
+    procedure LiberarBordasMaximas;
+    procedure LiberarBordasMinimas;
+    procedure LiberarBordas;
+    procedure PermitirMaximizar;
+    procedure PermitirMinimizar;
+    procedure SemBotoesdeJanela;
+    procedure ComBotoesdeJanela;
+    procedure DefinirBordaSimples;
+    procedure DefinirBordaAjustavel;
+    procedure DefinirBoxAvisos;
+    //Procedure BordasSimples;
   published
     Property LastActiveControl: tWinControl Read fLastActiveControl Write fLastActiveControl;
-  end;
+    Property MaxHeight:integer read getmaxHeight write setmaxHeight;
+    Property MaxWidth:integer read getmaxwidth write setmaxwidth;
+    Property MinHeight:integer read getminHeight write setminHeight;
+    Property MinWidth:integer read getminwidth write setminwidth;
+
+ end;
 
 var
   FrmBaseMain: TFrmBaseMain;
@@ -91,6 +121,7 @@ end;
 procedure TFrmBaseMain.FormCreate(Sender: TObject);
 begin
   inherited;
+  DefinirBordaAjustavel;
   shortdateformat:='dd/mm/yyyy';
   self.KeyPreview:=True;
   self.Position:=poDesktopCenter;
@@ -135,8 +166,9 @@ begin
 end;
 
 procedure TFrmBaseMain.GeraException(msg: string);
+{ gera msg de erro, gera exceção }
 begin
-     if trim(msg)<>'' then // só eleva exceção se existir uma msg de erro válida.
+     if trim(msg)<>'' then
      begin
           try
              showmessage( msg );
@@ -145,6 +177,102 @@ begin
                 raise;
           end;
      end;
+end;
+
+procedure TFrmBaseMain.NaoMaximizar;
+{ desabilita botão maximizar do form }
+begin
+     DefinirBordasMaximas;
+     self.BorderIcons:=self.BorderIcons-[biMaximize];
+end;
+
+procedure TFrmBaseMain.PermitirMaximizar;
+{ desabilita botão maximizar do form }
+begin
+     LiberarBordasMaximas;
+     self.BorderIcons:=self.BorderIcons+[biMaximize];
+end;
+
+procedure TFrmBaseMain.LiberarBordasMaximas;
+{ determina restrições altura/largura formulário }
+begin
+     self.MaxHeight:=0;
+     self.MaxWidth:=0;
+end;
+
+procedure TFrmBaseMain.DefinirBordasMaximas;
+{ determina restrições altura/largura formulário }
+begin
+     self.MaxHeight:=self.Height;
+     self.MaxWidth:=self.Width;
+end;
+
+procedure TFrmBaseMain.NaoMinimizar;
+{ determina restrições altura/largura formulário }
+begin
+     DefinirBordasMinimas;
+     self.BorderIcons:=self.BorderIcons-[biMinimize];
+end;
+
+procedure TFrmBaseMain.PermitirMinimizar;
+{ determina restrições altura/largura formulário }
+begin
+     LiberarBordasMinimas;
+     self.BorderIcons:=self.BorderIcons+[biMinimize];
+end;
+
+procedure TFrmBaseMain.SemBotoesdeJanela;
+begin
+     self.BorderIcons:=self.BorderIcons-[biSystemMenu];
+end;
+
+procedure TFrmBaseMain.ComBotoesdeJanela;
+begin
+     self.BorderIcons:=self.BorderIcons+[biSystemMenu];
+end;
+
+procedure TFrmBaseMain.DefinirBordaSimples;
+begin
+     DefinirBordas;
+     self.BorderStyle:=bsSingle;
+end;
+
+procedure TFrmBaseMain.DefinirBordaAjustavel;
+begin
+     LiberarBordas;
+     self.BorderStyle:=bsSizeable;
+end;
+
+procedure TFrmBaseMain.DefinirBoxAvisos;
+begin
+     DefinirBordas;
+     self.BorderStyle:=bsSizeToolWin;
+end;
+
+procedure TFrmBaseMain.DefinirBordasMinimas;
+{ determina restrições altura/largura formulário }
+begin
+     self.MinHeight:=self.Height;
+     self.MinWidth:=self.Width;
+end;
+
+procedure TFrmBaseMain.DefinirBordas;
+begin
+     DefinirBordasMaximas;
+     DefinirBordasMinimas;
+end;
+
+procedure TFrmBaseMain.LiberarBordasMinimas;
+{ determina restrições altura/largura formulário }
+begin
+     self.MinHeight:=0;
+     self.MinWidth:=0;
+end;
+
+procedure TFrmBaseMain.LiberarBordas;
+begin
+     LiberarBordasMaximas;
+     LiberarBordasMinimas;
 end;
 
 procedure TFrmBaseMain.DefineEnterExit(wCntrl: tWinControl);
@@ -169,6 +297,26 @@ begin
           Else
              wCntrl.onExit:=@DefaultOnExit;
      end;
+end;
+
+function TFrmBaseMain.getmaxHeight: integer;
+begin
+     result := self.Constraints.MaxHeight;
+end;
+
+function TFrmBaseMain.getmaxwidth: integer;
+begin
+     result := self.Constraints.MaxWidth;
+end;
+
+function TFrmBaseMain.getminHeight: integer;
+begin
+  result := self.Constraints.MinHeight;
+end;
+
+function TFrmBaseMain.getminwidth: integer;
+begin
+     result := self.Constraints.MaxWidth;
 end;
 
 procedure TFrmBaseMain.DefaultOnEnter(sender: tObject);
@@ -256,6 +404,27 @@ begin
      OnEventList.Clear;
      FreeAndNil(OnEventList);
 end;
+
+procedure TFrmBaseMain.setmaxHeight(AValue: integer);
+begin
+     self.Constraints.MaxHeight:=AValue;
+end;
+
+procedure TFrmBaseMain.setmaxwidth(AValue: integer);
+begin
+     self.Constraints.MaxWidth:=AValue;
+end;
+
+procedure TFrmBaseMain.setminHeight(AValue: integer);
+begin
+     self.Constraints.MinHeight:=AValue;
+end;
+
+procedure TFrmBaseMain.setminwidth(AValue: integer);
+begin
+     self.Constraints.MinWidth:=AValue;
+end;
+
 
 end.
 

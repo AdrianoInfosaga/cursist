@@ -1,6 +1,6 @@
 { Unit uteis.pas
   ================================================
-  *funções e procedures para finalidades diversas*
+  *lib de funções uteis                          *
   ================================================
   Adriano Alexandre Adami - 2014
   http://contribuicoes.wordpress.com
@@ -21,6 +21,8 @@ Function ExtrairNumeros(msg:string):string; // Extrai digitos de uma string
 Function LastDay( dtRef: tDate ) : Integer ; // retorna ultimo dia do mês
 //criado com dbinicio
 Function InsereBarraDiretorio(lPath:string):string; // Insere barra ao final do caminho informado
+Function qstr( dadostr:string ):string; // retorna dadosstr delimitada por aspas
+function strzero( nm,tam:integer ): string ; // retorna string representando valor com zeros a esquerda
 
 implementation
 
@@ -94,6 +96,24 @@ begin
      Else
          Result := lPath + '\';
 end;
+
+function qstr(dadostr: string): string;
+{ retorna string delimitada por aspas }
+begin
+  qstr:=quotedstr(dadostr);
+end;
+
+function strzero( nm,tam:integer ): string ;
+{ retorna string com valor preenchido com zeros a esquerda }
+var y,n: integer;
+begin
+     result := inttostr(nm)  ;
+     y := length( result );
+     if y < tam then
+        for n := 1 to (tam-y) do
+            result := '0'+result;
+end;
+
 
 end.
 
